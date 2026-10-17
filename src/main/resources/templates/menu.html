@@ -1,10 +1,444 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Menu · Kebab House</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --coal-900: #241210;
+            --coal-800: #331a15;
+            --red-600: #c8102e;
+            --red-700: #a30d25;
+            --gold-400: #f5b301;
+            --cream-50: #fbf6ee;
+            --cream-100: #f3ebde;
+            --line: #eadfce;
+            --ink: #2a1a15;
+            --muted: #7d6b60;
+            --white: #ffffff;
+            --radius-lg: 18px;
+            --radius-md: 12px;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body { height: 100%; }
+
+        body {
+            margin: 0;
+            font-family: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: var(--ink);
+            background: var(--cream-50);
+            display: grid;
+            grid-template-columns: 283px 1fr;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        :focus-visible { outline: 2px solid var(--gold-400); outline-offset: 2px; }
+
+        /* ---------- Sidebar ---------- */
+        .sidebar {
+            background: var(--coal-900);
+            color: #e7d3c4;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 15px 24px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .brand { display: flex; align-items: center; gap: 15px; padding: 0 10px; margin-bottom: 44px; }
+
+        .brand-mark {
+            width: 45px; height: 45px; border-radius: 12px;
+            background: var(--red-600);
+            display: grid; place-items: center;
+        }
+
+        .brand-name { font-size: 22px; font-weight: 600; color: var(--white); line-height: 1; }
+        .brand-sub { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #b99a86; margin-top: 6px; }
+
+        .nav { display: flex; flex-direction: column; gap: 6px; }
+
+        .nav a {
+            display: flex; align-items: center; gap: 14px;
+            padding: 0 16px; height: 52px;
+            border-radius: var(--radius-md);
+            font-size: 18px; font-weight: 500;
+            color: #e7d3c4;
+            transition: background .15s ease;
+        }
+
+        .nav a:hover { background: rgba(255, 255, 255, .07); }
+
+        .nav a.active { background: var(--red-600); color: var(--white); }
+
+        .nav svg { flex: none; }
+
+        .badge {
+            margin-left: auto;
+            min-width: 28px; height: 22px; padding: 0 8px;
+            border-radius: 11px;
+            background: rgba(255, 255, 255, .14);
+            color: var(--white);
+            font-size: 12px; font-weight: 700;
+            display: grid; place-items: center;
+        }
+
+        .user {
+            margin-top: auto;
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px; border-radius: 16px;
+            background: rgba(255, 255, 255, .07);
+        }
+
+        .avatar {
+            width: 46px; height: 46px; border-radius: 50%;
+            background: var(--gold-400); color: var(--coal-900);
+            display: grid; place-items: center;
+            font-weight: 700; font-size: 15px;
+        }
+
+        .user-name { color: var(--white); font-weight: 600; font-size: 15px; }
+        .user-role { color: #b99a86; font-size: 13px; margin-top: 2px; }
+        .user .logout { margin-left: auto; color: #b99a86; display: grid; }
+
+        /* ---------- Main ---------- */
+        .main { min-width: 0; position: relative; }
+
+        /* Hero banner behind top bar + page title.
+           Layer 1: optional photo (drop a file at src/main/resources/static/images/kebab-hero.jpg).
+           Layers 2-3: dark warm gradient that keeps the text readable and works without a photo. */
+        .hero {
+            position: absolute; inset: 0 0 auto 0; height: 340px; overflow: hidden;
+            background:
+                    linear-gradient(100deg, rgba(36,18,16,.96) 0%, rgba(36,18,16,.82) 45%, rgba(36,18,16,.35) 100%),
+                    url("/images/kebab-hero.jpg") center / cover no-repeat,
+                    radial-gradient(120% 140% at 85% 30%, #7a2a14 0%, var(--coal-800) 55%, var(--coal-900) 100%);
+        }
+        .hero::after {
+            content: ""; position: absolute; inset: auto 0 0 0; height: 70px;
+            background: linear-gradient(to bottom, transparent, var(--cream-50));
+        }
+        .hero svg { position: absolute; right: 4%; top: 0; height: 100%; width: auto; max-width: 55%; opacity: .95; }
+
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            padding: 22px 40px 20px;
+            position: relative; z-index: 1;
+        }
+
+        .date { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: #e9c9a0; font-weight: 600; }
+        .greeting { color: var(--white); font-size: 28px; font-weight: 500; margin: 6px 0 0; letter-spacing: -.01em; }
+
+        .top-actions { display: flex; align-items: center; gap: 14px; }
+
+        .icon-btn {
+            height: 48px; min-width: 48px; padding: 0 16px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.12);
+            color: var(--white);
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            font: inherit; font-size: 17px;
+            cursor: pointer; position: relative;
+        }
+
+        .icon-btn .dot {
+            position: absolute; top: 11px; right: 12px;
+            width: 7px; height: 7px; border-radius: 50%; background: var(--gold-400);
+        }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            height: 55px; padding: 0 24px;
+            border: 0; border-radius: var(--radius-md);
+            background: var(--red-600); color: var(--white);
+            font: inherit; font-size: 19px; font-weight: 500;
+            cursor: pointer;
+            transition: background .15s ease;
+        }
+
+        .btn:hover { background: var(--red-700); }
+
+        .content { padding: 38px 40px 60px; position: relative; z-index: 1; }
+
+        .page-head { display: flex; padding-bottom: 20px; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 30px; }
+
+        .eyebrow { font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold-400); font-weight: 600; }
+
+        h1 { color: var(--white); margin: 10px 0 0; font-size: 42px; font-weight: 500; letter-spacing: -.02em; line-height: 1; }
+
+        .btn.add { height: 60px; padding: 0 28px; background: var(--gold-400); color: var(--coal-900); font-weight: 600; }
+        .btn.add:hover { background: #ffc61f; }
+
+        /* ---------- Panel + table ---------- */
+        .panel {
+            box-shadow: 0 10px 30px rgba(36,18,16,.10);
+            background: var(--white);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            padding: 21px 0 0;
+            overflow: hidden;
+        }
+
+        .toolbar { display: flex; gap: 14px; padding: 0 20px 21px; }
+
+        .search {
+            flex: 1; display: flex; align-items: center; gap: 12px;
+            height: 56px; padding: 0 16px;
+            background: var(--cream-100); border-radius: var(--radius-md);
+            color: var(--muted);
+        }
+
+        .search input {
+            flex: 1; border: 0; background: transparent; outline: 0;
+            font: inherit; font-size: 18px; color: var(--ink);
+        }
+
+        .search input::placeholder { color: #b3a498; }
+        .search:focus-within { box-shadow: 0 0 0 2px var(--gold-400); }
+
+        .filter-btn {
+            height: 56px; padding: 0 22px;
+            border: 1px solid var(--line); border-radius: var(--radius-md);
+            background: var(--white); color: var(--ink);
+            font: inherit; font-size: 18px; cursor: pointer;
+        }
+
+        .table-wrap { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; min-width: 640px; }
+
+        th {
+            text-align: left; padding: 14px 25px;
+            font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+            color: var(--muted); font-weight: 600;
+            border-top: 1px solid var(--line);
+        }
+
+        td {
+            padding: 20px 25px; vertical-align: middle;
+            border-top: 1px solid var(--line);
+            font-size: 15px; color: #66554b;
+        }
+
+        td.name { font-weight: 700; color: var(--coal-900); white-space: nowrap; }
+        td.price { white-space: nowrap; }
+
+        tbody tr:hover td { background: #fff9ef; }
+
+        .allergen {
+            display: inline-block; padding: 3px 10px;
+            border-radius: 999px; background: #fde9b8; color: #7a4a00;
+            font-size: 13px; font-weight: 500;
+        }
+
+        .empty { padding: 36px 25px; text-align: center; color: var(--muted); border-top: 1px solid var(--line); }
+
+        [hidden] { display: none !important; }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 960px) {
+            body { grid-template-columns: 1fr; }
+            .sidebar { position: static; height: auto; padding: 16px; }
+            .brand { margin-bottom: 16px; }
+            .nav { flex-direction: row; overflow-x: auto; }
+            .nav a { height: 44px; font-size: 16px; white-space: nowrap; }
+            .user { display: none; }
+            .topbar, .content { padding-left: 20px; padding-right: 20px; }
+            .hero svg { opacity: .35; }
+            .greeting { font-size: 22px; }
+            h1 { font-size: 34px; }
+        }
+    </style>
 </head>
 <body>
-$END$
+
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M13 2v22" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7 6c2-1.5 10-1.5 12 0l-2 15c-2 1-6 1-8 0z" fill="#f5b301"/><path d="M8 11h10M8.8 16h8.4" stroke="#c8102e" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+            <div class="brand-name">Kebab House</div>
+            <div class="brand-sub">Restaurant OS</div>
+        </div>
+    </div>
+
+    <nav class="nav" aria-label="Main">
+        <a th:href="@{/overview}" href="#">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            Overview
+        </a>
+        <a th:href="@{/floor-plan}" href="#">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 8h14M7 8v10M17 8v10M5 8l1-3h12l1 3"/></svg>
+            Floor plan
+        </a>
+        <a th:href="@{/orders}" href="#">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
+            Orders
+            <span class="badge">4</span>
+        </a>
+        <a th:href="@{/reservations}" href="#">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            Reservations
+        </a>
+        <a th:href="@{/reports}" href="#">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 20h16M7 20v-7M12 20V6M17 20v-10"/></svg>
+            Reports
+        </a>
+        <a th:href="@{/menu}" href="#" class="active" aria-current="page">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>
+            Menu
+        </a>
+        <a th:href="@{/team}" href="#">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.5 3.5 0 010 7M18 14c2 .7 3 2.6 3 6"/></svg>
+            Team
+        </a>
+        <a th:href="@{/settings}" href="#">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/></svg>
+            Settings
+        </a>
+    </nav>
+
+    <div class="user">
+        <div class="avatar">OH</div>
+        <div>
+            <div class="user-name">Olivia Hart</div>
+            <div class="user-role">Administrator</div>
+        </div>
+        <a class="logout" th:href="@{/logout}" href="#" aria-label="Log out">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H6a2 2 0 00-2 2v12a2 2 0 002 2h4M15 8l4 4-4 4M19 12H9"/></svg>
+        </a>
+    </div>
+</aside>
+
+<div class="main">
+    <div class="hero" aria-hidden="true">
+        <svg viewBox="0 0 520 340" preserveAspectRatio="xMidYMin meet" xmlns="http://www.w3.org/2000/svg">
+            <!-- flames -->
+            <path d="M120 340c-30-60 10-90 0-140 40 40 50 90 30 140z" fill="#f5b301" opacity=".35"/>
+            <path d="M400 340c-30-70 20-100 0-160 50 50 60 100 36 160z" fill="#ff7a1a" opacity=".35"/>
+            <path d="M80 340c-14-40 6-60 0-90 24 26 28 60 16 90z" fill="#ff7a1a" opacity=".3"/>
+            <!-- skewer -->
+            <rect x="256" y="10" width="8" height="330" rx="4" fill="#d8cfc6"/>
+            <circle cx="260" cy="12" r="10" fill="#c8102e"/>
+            <!-- doner cone -->
+            <path d="M150 70q110-30 220 0l-50 250q-60 14-120 0z" fill="#7b3a1d"/>
+            <path d="M160 105q100-22 200 0M168 150q92-20 184 0M178 195q82-18 164 0M190 240q70-16 140 0M202 282q58-12 116 0" stroke="#b5622c" stroke-width="7" stroke-linecap="round" fill="none" opacity=".75"/>
+            <path d="M178 80q40-12 60-10l-30 240q-14-3-22-6z" fill="#fff" opacity=".07"/>
+            <!-- tomato + pepper -->
+            <circle cx="70" cy="290" r="22" fill="#c8102e"/><path d="M60 272q10-8 20 0" stroke="#3f7d2c" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <path d="M455 300q30-34 38-6 6 22-18 30-16 2-20-24z" fill="#3f7d2c" opacity=".9"/>
+        </svg>
+    </div>
+    <header class="topbar">
+        <div>
+            <div class="date" id="today-date"></div>
+            <p class="greeting" id="greeting">Welcome, Olivia</p>
+        </div>
+        <div class="top-actions">
+            <button class="icon-btn" type="button" aria-label="Search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            </button>
+            <button class="icon-btn" type="button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>
+                EN
+            </button>
+            <button class="icon-btn" type="button" aria-label="Notifications">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17V11a6 6 0 1112 0v6l1.5 2h-15zM10 21h4"/></svg>
+                <span class="dot"></span>
+            </button>
+            <a class="btn" th:href="@{/orders/new-meal}" href="#">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                New order
+            </a>
+        </div>
+    </header>
+
+    <main class="content">
+        <div class="page-head">
+            <div>
+                <div class="eyebrow">Administrator</div>
+                <h1>Menu</h1>
+            </div>
+            <a class="btn add" th:href="@{/menu/new-meal}" href="#">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Add new
+            </a>
+        </div>
+
+        <section class="panel" aria-label="Meals">
+            <div class="toolbar">
+                <label class="search">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                    <input id="menu-search" type="search" placeholder="Search menu…" autocomplete="off">
+                </label>
+                <button class="filter-btn" type="button">Filter</button>
+            </div>
+
+            <div class="table-wrap">
+                <table id="menu-table">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price (EUR)</th>
+                        <th>Allergens</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="meal : ${menu.meals}">
+                        <td class="name" th:text="${meal.name}"></td>
+                        <td class="price" th:text="${#numbers.formatDecimal(meal.price, 1, 2)} + ' €'"></td>
+                        <td>
+                            <span class="allergen" th:if="${meal.allergen != null and !#strings.isEmpty(meal.allergen)}" th:text="${meal.allergen}"></span>
+                            <span th:unless="${meal.allergen != null and !#strings.isEmpty(meal.allergen)}">—</span>
+                        </td>
+                        <td th:text="${meal.description}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="empty" id="no-results" hidden>No meals match your search.</div>
+        </section>
+    </main>
+</div>
+
+<script>
+    // Date and greeting in the top bar
+    (function () {
+        var now = new Date();
+        document.getElementById('today-date').textContent =
+            'Today · ' + now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        var h = now.getHours();
+        var part = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+        document.getElementById('greeting').textContent = part + ', Olivia';
+    })();
+
+    // Client-side search across all columns
+    (function () {
+        var input = document.getElementById('menu-search');
+        var rows = document.querySelectorAll('#menu-table tbody tr');
+        var empty = document.getElementById('no-results');
+
+        input.addEventListener('input', function () {
+            var q = input.value.trim().toLowerCase();
+            var visible = 0;
+            rows.forEach(function (row) {
+                var match = row.textContent.toLowerCase().indexOf(q) !== -1;
+                row.hidden = !match;
+                if (match) visible++;
+            });
+            empty.hidden = visible !== 0 || rows.length === 0;
+        });
+    })();
+</script>
 </body>
 </html>

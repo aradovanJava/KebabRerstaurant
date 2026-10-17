@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Adding new meal</title>
+</head>
+<body>
+
+<form th:action="@{/menu/new-meal}" th:object="${mealForm}" method="post">
+    <label>Name</label>
+    <input type="text" th:field="*{name}" placeholder="Meal name" />
+
+    <label>Description</label>
+    <textarea th:field="*{description}" placeholder="Meal description" />
+
+    <label>Price (EUR)</label>
+    <input type="number" th:field="*{price}" placeholder="Meal price"></input>
+
+    <label>Normative (g)</label>
+    <input type="number" th:field="*{normative}" placeholder="Meal normative"></input>
+
+    <select id="dropDownList" th:field="*{allergen}" multiple>
+        <option th:each="al : ${mealForm.allergen}" th:value="${al}" th:text="${al}"></option>
+    </select>
+
+    <button type="submit">Send</button>
+</form>
+
+</body>
+</html>

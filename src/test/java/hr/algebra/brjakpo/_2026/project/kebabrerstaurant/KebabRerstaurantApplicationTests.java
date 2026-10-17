@@ -8,3 +8,6 @@ class KebabRerstaurantApplicationTests {
 
     @Test
     void contextLoads() {
+    }
+
+}
