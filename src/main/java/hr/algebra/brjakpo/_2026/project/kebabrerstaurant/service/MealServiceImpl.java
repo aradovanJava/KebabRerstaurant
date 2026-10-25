@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -22,4 +23,21 @@ public class MealServiceImpl implements MealService {
     public Meal saveNewMeal(Meal theMeal) {
         return mealRepository.addMeal(theMeal);
     }
+
+    @Override
+    public void deleteMeal(Meal theMealToDelete) {
+        mealRepository.deleteMeal(theMealToDelete);
+    }
+
+    @Override
+    public Optional<Meal> getMealById(Long id) {
+        return mealRepository.getMealById(id);
+    }
+
+    @Override
+    public void updateMeal(Long id, Meal theMealToUpdate) {
+        mealRepository.updateMeal(id, theMealToUpdate);
+    }
+
+
 }

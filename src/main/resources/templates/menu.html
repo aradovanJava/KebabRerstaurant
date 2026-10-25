@@ -391,6 +391,7 @@
                         <th>Price (EUR)</th>
                         <th>Allergens</th>
                         <th>Description</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -402,6 +403,14 @@
                             <span th:unless="${meal.allergen != null and !#strings.isEmpty(meal.allergen)}">—</span>
                         </td>
                         <td th:text="${meal.description}"></td>
+                        <td>
+                            <form method="get" th:action="@{/menu/{i}/update(i=${meal.id})}">
+                                <button type="submit">Update</button>
+                            </form>
+                            <form method="post" th:action="@{/menu/{i}/delete(i=${meal.id})}">
+                                <button type="submit">Delete</button>
+                            </form>
+                        </td>
                     </tr>
                     </tbody>
                 </table>

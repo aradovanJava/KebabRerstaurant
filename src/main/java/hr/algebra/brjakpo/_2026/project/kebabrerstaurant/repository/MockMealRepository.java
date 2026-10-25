@@ -70,4 +70,32 @@ public class MockMealRepository implements  MealRepository {
         allMeals.add(theMeal);
         return theMeal;
     }
+
+    @Override
+    public void deleteMeal(Meal theMealToDelete) {
+        allMeals.remove(theMealToDelete);
+    }
+
+    @Override
+    public Optional<Meal> getMealById(Long id) {
+        return allMeals.stream()
+                .filter(m -> m.getId() == id)
+                .findFirst();
+    }
+
+    @Override
+    public void updateMeal(Long id, Meal theMealToUpdate) {
+        Optional<Meal> mealToUpdateOptional =
+                allMeals.stream()
+                .filter(m -> m.getId() == id)
+                .findFirst();
+
+        if(mealToUpdateOptional.isPresent()) {
+            Meal mealToUpdate = mealToUpdateOptional.get();
+            mealToUpdate.setDescription(theMealToUpdate.getDescription());
+            mealToUpdate.setPrice(theMealToUpdate.getPrice());
+            mealToUpdate.setNormative(theMealToUpdate.getNormative());
+            mealToUpdate.setAllergen(theMealToUpdate.getAllergen());
+        }
+    }
 }
