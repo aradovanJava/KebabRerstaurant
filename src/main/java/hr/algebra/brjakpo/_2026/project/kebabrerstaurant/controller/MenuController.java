@@ -5,9 +5,11 @@ import hr.algebra.brjakpo._2026.project.kebabrerstaurant.model.Allergen;
 import hr.algebra.brjakpo._2026.project.kebabrerstaurant.model.Meal;
 import hr.algebra.brjakpo._2026.project.kebabrerstaurant.model.Menu;
 import hr.algebra.brjakpo._2026.project.kebabrerstaurant.service.MealService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,18 +46,34 @@ public class MenuController {
     public String getNewMeal(Model model) {
 
         MealForm mealForm = new MealForm();
+
+        //mealForm.setAllergen(List.of(Allergen.MILK.toString()));
         mealForm.setAllergen(
                 Arrays.stream(
                         Allergen.values()).toList()
                         .stream().map(
                                 al -> al.getDisplayName()).toList());
+        //mealForm.setSelectedAllergen(List.of(Allergen.MILK.toString()));
+
 
         model.addAttribute("mealForm", mealForm);
         return  "new-meal";
     }
 
     @PostMapping("new-meal")
-    public String createNewMeal(MealForm mealForm) {
+    public String createNewMeal(@Valid MealForm mealForm, BindingResult result,
+                                RedirectAttributes redirect) {
+
+        mealForm.setAllergen(
+                Arrays.stream(
+                                Allergen.values()).toList()
+                        .stream().map(
+                                al -> al.getDisplayName()).toList());
+
+        if(result.hasErrors()) {
+            return "new-meal";
+        }
+
         Meal newOrUpdatedMeal = new Meal();
         newOrUpdatedMeal.setId(mealForm.getId());
         newOrUpdatedMeal.setName(mealForm.getName());
@@ -63,17 +81,16 @@ public class MenuController {
         newOrUpdatedMeal.setPrice(mealForm.getPrice());
         newOrUpdatedMeal.setNormative(mealForm.getNormative());
 
-        List<Allergen> allergens = new ArrayList<>();
+        List<Allergen> selectedAllergens = new ArrayList<>();
 
-        for(String allergen : mealForm.getAllergen()) {
-
+        for(String allergen : mealForm.getSelectedAllergen()) {
             Arrays.stream(Allergen.values())
                     .filter(a -> a.getDisplayName().equals(allergen))
                     .findFirst()
-                    .ifPresent(allergens::add);
+                    .ifPresent(selectedAllergens::add);
         }
 
-        newOrUpdatedMeal.setAllergen(allergens);
+        newOrUpdatedMeal.setAllergen(selectedAllergens);
 
         if(Optional.ofNullable(newOrUpdatedMeal.getId()).isPresent()) {
             mealService.updateMeal(mealForm.getId(), newOrUpdatedMeal);
@@ -97,7 +114,12 @@ public class MenuController {
             mealForm.setDescription(meal.getDescription());
             mealForm.setPrice(meal.getPrice());
             mealForm.setNormative(meal.getNormative());
-            mealForm.setAllergen(meal.getAllergen().stream().map(a -> a.getDisplayName()).toList());
+            mealForm.setAllergen(
+                    Arrays.stream(
+                                    Allergen.values()).toList()
+                            .stream().map(
+                                    al -> al.getDisplayName()).toList());
+            mealForm.setSelectedAllergen(meal.getAllergen().stream().map(a -> a.getDisplayName()).toList());
             model.addAttribute("mealForm", mealForm);
         }
 
